@@ -5,6 +5,7 @@ from flask_restful import Resource, Api, reqparse, fields, marshal_with, abort
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 db = SQLAlchemy(app)
+api = Api(app)
 
 
 class UserModel(db.Model):
@@ -30,15 +31,15 @@ class Users(Resource):
         return users
 
     def post(self):
-        args = user_args.parse_args
+        args = user_args.parse_args()
         user = UserModel(name=args["name"], email=args["email"])
         db.session.add(user)
         db.session.commit()
         Users = UserModel.query.all()
-        return Users, 201
+        return user, 201
 
 
-app.add_resource(Users, "/app/users/")
+api.add_resource(Users, "/app/users/")
 
 
 @app.route("/")
