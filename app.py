@@ -87,6 +87,7 @@ class User(Resource):
 
 # Adding the Users Resource to API
 api.add_resource(Users, "/app/users/")
+api.add_resource(User, "/app/users/<int:user_id>")
 
 
 # Root Route
