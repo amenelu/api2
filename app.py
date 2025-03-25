@@ -17,6 +17,13 @@ class UserModel(db.Model):
     def __repr__(self):
         return f"user(id={self.id}, name={self.name}, email={self.email})"
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+        }
+
 
 # Request Parser for User
 user_args = reqparse.RequestParser()
@@ -46,7 +53,7 @@ class Users(Resource):
         user = UserModel(name=args["name"], email=args["email"])
         db.session.add(user)
         db.session.commit()
-        return user, 201  # Returns the created user with HTTP 201 status
+        return user.to_dict(), 201  # Returns the created user with HTTP 201 status
 
 
 # Adding the Users Resource to API
