@@ -8,44 +8,58 @@ db = SQLAlchemy(app)
 api = Api(app)
 
 
+# User Model
 class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(30), unique=True, nullable=False)
 
     def __repr__(self):
-        return f"user(name={self.name},email={self.email})"
+        return f"user(id={self.id}, name={self.name}, email={self.email})"
 
 
+# Request Parser for User
 user_args = reqparse.RequestParser()
-user_args.add_argument("name", type=str, required=True, help="name can not be empty")
-user_args.add_argument("email", type=str, required=True, help="email can not be blank")
+user_args.add_argument("name", type=str, required=True, help="Name cannot be empty")
+user_args.add_argument("email", type=str, required=True, help="Email cannot be blank")
 
-userFields = {"id": fields.Integer, "name": fields.String, "email": fields.String}
+# Field Mapping for Serialization
+userFields = {
+    "id": fields.Integer,
+    "name": fields.String,
+    "email": fields.String,
+}
 
 
+# Resource Class for Users
 class Users(Resource):
     @marshal_with(userFields)
     def get(self):
         users = UserModel.query.all()
+        if not users:
+            abort(404, description="No users found.")
         return users
 
+    @marshal_with(userFields)
     def post(self):
-        args = user_args.parse_args()
+        args = user_args.parse_args()  # Fixed missing parentheses
         user = UserModel(name=args["name"], email=args["email"])
         db.session.add(user)
         db.session.commit()
-        Users = UserModel.query.all()
-        return user, 201
+        return user, 201  # Returns the created user with HTTP 201 status
 
 
+# Adding the Users Resource to API
 api.add_resource(Users, "/app/users/")
 
 
+# Root Route
 @app.route("/")
 def home():
-    return ""
+    return "Welcome to the User API!"
 
 
-if __name__ == "__main":
+# Run the Application
+if __name__ == "__main__":
+    db.create_all()  # Ensure tables are created
     app.run(debug=True)
