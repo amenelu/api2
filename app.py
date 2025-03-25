@@ -53,7 +53,36 @@ class Users(Resource):
         user = UserModel(name=args["name"], email=args["email"])
         db.session.add(user)
         db.session.commit()
-        return user.to_dict(), 201  # Returns the created user with HTTP 201 status
+        return user, 201  # Returns the created user with HTTP 201 status
+
+
+class User(Resource):
+    @marshal_with(userFields)
+    def get(self, user_id):
+        user = UserModel.query.filter_by(id=user_id).first()
+        if not user:
+            abort(404, description="User not found.")
+        return user
+
+    @marshal_with(userFields)
+    def put(self, user_id):
+        args = user_args.parse_args()
+        user = UserModel.query.filter_by(id=user_id).first()
+        if not user:
+            abort(404, description="User not found.")
+        user.name = args["name"]
+        user.email = args["email"]
+        db.session.commit()
+        return user
+
+    def delete(self, user_id):
+        user = UserModel.query.filter_by(id=user_id).first()
+        if not user:
+            abort(404, description="User not found.")
+
+        db.session.delete(user)
+        db.session.commit()  # Commit the deletion
+        return "", 204
 
 
 # Adding the Users Resource to API
